@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<packages>
+<package>com.thinking.machines.dModel.dl</package>
+<package>com.thinking.machines.dModel.services</package>
+<package>com.thinking.machines.dModel</package>
+
+</packages>

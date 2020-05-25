@@ -1,0 +1,81 @@
+package com.thinking.machines.dModel.services;
+import com.thinking.machines.dModel.utilities.*;
+import com.thinking.machines.tmws.annotations.*;
+import com.thinking.machines.dmframework.exceptions.*;
+import com.thinking.machines.dModel.dl.*;
+import com.thinking.machines.dmframework.*;
+import java.util.*;
+@Path("/memberLogin")
+public class memberLogin
+{
+@Post
+@Path("login")
+public Object login(Member member)
+{
+try
+{
+Member dlMember =new Member();
+dlMember.setEmailId(member.getEmailId());
+dlMember.setPassword(member.getPassword());
+List<Member> dbMember; //dlDepartments
+List<Member> members; //departments
+Member dMember=null;
+DataManager dataManager=new DataManager();
+dataManager.begin();
+dbMember=dataManager.select(Member.class).query();
+dataManager.end();
+members=new LinkedList<Member>();
+
+for(Member a:dbMember)
+{
+dMember=new Member();
+dMember.setEmailId(a.getEmailId());
+dMember.setPasswordKey(a.getPasswordKey());
+dMember.setPassword(a.getPassword());
+members.add(dMember);
+}
+String decryptedPassword=utility.decrypt(dMember.getPassword(), dMember.getPasswordKey());
+
+
+
+System.out.println("Sahi Password, "+decryptedPassword);
+
+
+
+
+if(dlMember.getEmailId().equals(dMember.getEmailId()))
+{
+if(decryptedPassword.equals(dlMember.getPassword()))
+{
+return true;
+}
+else
+{
+return false;
+// galat password ki condition
+}
+}
+else
+{
+return false;
+//galat username ki condition
+}
+
+
+
+
+
+
+
+
+
+
+
+
+}//try
+catch(DMFrameworkException dmFrameWorkException)
+{
+return new Exception (dmFrameWorkException) ;
+}
+}//method
+}//class

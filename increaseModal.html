@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Project View</title>
+
+<!-- Bootstrap core CSS-->
+<link href="/tmdModel/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Custom fonts for this template-->
+<link href="/tmdModel/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+
+<!-- Page level plugin CSS-->
+<link href="/tmdModel/vendor/datatables/dataTables.bootstrap4.css" rel="stylesheet">
+
+<!-- Custom styles for this template-->
+<link href="/tmdModel/css/sb-admin.css" rel="stylesheet">
+
+<link href="/tmdModel/JQuery/fontAwesome.css" rel="stylesheet">
+
+<!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"-->
+
+
+<!--link href="/tmdModel/JQuery/bootstrap.min.css" rel="stylesheet" -->
+
+    
+<script src="/tmdModel/JQuery/jquery-3.3.1.min.js"></script>
+<script src="/tmdModel/JQuery/bootstrap.min.js"></script>
+
+<script>
+function changeArea()
+{
+
+var divId=document.getElementById('divCanvas');
+var canvasId=document.getElementById('canvas');
+divId.style="width:820px;height:400px;overflow:scroll";
+canvasId.height=900;
+
+}
+</script>
+
+
+
+</head>
+<body>
+<div id='divCanvas'>
+<canvas id="canvas" width="800" height="400" style="border:1px solid"></canvas>
+
+</div>
+<div>
+<button type='button' id='button'  onclick='changeArea()'>Click</button>
+</div>
+</body>
+
+</html>

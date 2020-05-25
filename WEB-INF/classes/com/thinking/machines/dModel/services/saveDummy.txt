@@ -1,0 +1,196 @@
+package com.thinking.machines.dModel.services;
+import com.thinking.machines.dModel.services.pojo.*;
+import com.thinking.machines.dModel.dl.Member;
+import com.thinking.machines.dModel.dl.Project;
+import com.thinking.machines.dModel.dl.DatabaseTable;
+import com.thinking.machines.dModel.dl.DatabaseTableField;
+import com.thinking.machines.tmws.annotations.*;
+import com.thinking.machines.dmframework.*;
+import com.thinking.machines.dmframework.exceptions.*;
+import com.thinking.machines.dModel.exceptions.*;
+import java.util.*;
+import com.thinking.machines.dModel.utilities.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+@Path("/saveDummy")
+public class saveDummy
+{
+HttpSession session;
+@Post
+@Path("saveProject")
+public Object saveProject(com.thinking.machines.dModel.services.pojo.ClientProject clientProject)
+{
+System.out.println("SaveChala");
+System.out.println(clientProject);
+List<com.thinking.machines.dModel.services.pojo.ClientDatabaseTable> cc=clientProject.getTables();
+System.out.println("***********************************************************");
+//Project project=(Project)this.session.getAttribute("project");
+int architectureCode=1 ;
+//project.getDatabaseArchitectureCode();
+System.out.println("Code:"+architectureCode);
+//System.out.println(member);
+//com.thinking.machines.dModel.services.pojo.Project project=(com.thinking.machines.dModel.services.pojo.Project)this.session.getAttribute("projects");
+//System.out.println(project);
+int memberCode=1;
+int projectCode=1;
+int tableCode=0;
+int databaseArchitectureDataTypeCode=0;
+//int memberCode=member.getCode();
+//int projectCode=project.getCode();
+System.out.println(" project code : "+projectCode+", "+" member code : "+memberCode);
+//com.thinking.machines.dModel.dl.Project dlProject=new com.thinking.machines.dModel.dl.Project();
+com.thinking.machines.dModel.dl.DatabaseTable dlDatabaseTable= new com.thinking.machines.dModel.dl.DatabaseTable();
+List<com.thinking.machines.dModel.dl.DatabaseTable> dlDatabaseTableList= new LinkedList<com.thinking.machines.dModel.dl.DatabaseTable>();
+List<com.thinking.machines.dModel.dl.DatabaseArchitectureDataType> dlDatabaseArchitectureDataTypeList= new LinkedList<com.thinking.machines.dModel.dl.DatabaseArchitectureDataType>();
+com.thinking.machines.dModel.dl.DatabaseTableField dlDatabaseTableField=new com.thinking.machines.dModel.dl.DatabaseTableField();
+try
+{
+DataManager dataManager=new DataManager();
+dataManager.begin();
+for(com.thinking.machines.dModel.services.pojo.ClientDatabaseTable c:cc)
+{
+String name=c.getName(); // table ka name
+String note=c.getNote(); //table ka note
+int numberOfFields=c.getNumberOfFields();
+int xLocation=c.getXLocation();
+int yLocation=c.getYLocation();
+System.out.println("Name :"+name+", "+"Note : "+note+ ", "+"Number of Fields : "+numberOfFields+", "+xLocation+" , "+yLocation);
+dlDatabaseTable.setProjectCode(projectCode);
+dlDatabaseTable.setName(name);
+dlDatabaseTable.setDatabaseEngineCode(1);
+dlDatabaseTable.setNote(note);
+dlDatabaseTable.setNumberOfFields(numberOfFields);
+dlDatabaseTable.setXLocation(xLocation);
+dlDatabaseTable.setYLocation(yLocation);
+System.out.println("DatabaseTable Insert hone wala hai");
+dataManager.insert(dlDatabaseTable);
+System.out.println("DatabaseTable Insert Ho gya");
+List<ClientField> fields=c.getFields();
+//dlDatabaseTableList=dataManager.select(com.thinking.machines.dModel.dl.DatabaseTable.class).query();
+dlDatabaseTableList=dataManager.select(com.thinking.machines.dModel.dl.DatabaseTable.class).where("name").eq(name).query();
+for(com.thinking.machines.dModel.dl.DatabaseTable d:dlDatabaseTableList)
+{
+tableCode=d.getCode();
+}
+for(ClientField cf:fields)
+{
+dlDatabaseArchitectureDataTypeList=dataManager.select(com.thinking.machines.dModel.dl.DatabaseArchitectureDataType.class).where("databaseArchitectureCode").eq(architectureCode).query();
+for(com.thinking.machines.dModel.dl.DatabaseArchitectureDataType d:dlDatabaseArchitectureDataTypeList)
+{
+System.out.println("For me gaya"+"Name:"+cf.getDataType()+","+"DataType:"+d.getDataType());
+
+if(cf.getDataType().equalsIgnoreCase(d.getDataType())) 
+{
+System.out.println("If me gaya");
+
+databaseArchitectureDataTypeCode=d.getCode();
+}
+}
+dlDatabaseTableField.setTableCode(tableCode);
+dlDatabaseTableField.setName(cf.getName());
+dlDatabaseTableField.setDatabaseArchitectureDataTypeCode(databaseArchitectureDataTypeCode);
+dlDatabaseTableField.setWidth(11);
+dlDatabaseTableField.setNumberOfDecimalPlaces(10);
+dlDatabaseTableField.setIsPrimaryKey(cf.getIsPrimaryKey());
+dlDatabaseTableField.setIsAutoIncrement(cf.getIsAutoIncrement());
+dlDatabaseTableField.setIsUnique(cf.getIsUnique());
+dlDatabaseTableField.setIsNotNull(cf.getIsNotNull());
+dlDatabaseTableField.setDefaultValue("Not Null");
+dlDatabaseTableField.setNote(cf.getNote());
+dlDatabaseTableField.setCheckConstraint("First Letter Must Be A ");
+System.out.println("DatabaseTableField Insert hone wala hai");
+System.out.println(tableCode+","+cf.getName()+","+databaseArchitectureDataTypeCode+","+","+cf.getIsPrimaryKey()+","+cf.getIsUnique()+","+cf.getIsNotNull()+","+cf.getIsAutoIncrement()+","+","+cf.getNote());
+dataManager.insert(dlDatabaseTableField);
+System.out.println("DatabaseTableField Added");
+}//fields wala for
+}//for bada wala
+dataManager.end();
+System.out.println("************Chal Gya *****************");
+}catch(Exception validatorException)
+{
+System.out.println(validatorException.getMessage());
+}
+return true;
+//return new TMForward("/homepage.jsp");
+}//save khatam
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+@InjectSession
+public Object saveProject(com.thinking.machines.dModel.services.pojo.ClientProject clientProject)
+{
+System.out.println("Chala");
+List<com.thinking.machines.dModel.services.pojo.ClientDatabaseTable> cc=clientProject.getTables();
+Member member=(Member)this.session.getAttribute("member");
+com.thinking.machines.dModel.services.pojo.Project project=(com.thinking.machines.dModel.services.pojo.Project)this.session.getAttribute("projects");
+int memberCode=member.getCode();
+int projectCode=project.getCode();
+com.thinking.machines.dModel.dl.Project dlProject=new com.thinking.machines.dModel.dl.Project();
+com.thinking.machines.dModel.dl.DatabaseTable dlDatabaseTable= new com.thinking.machines.dModel.dl.DatabaseTable();
+com.thinking.machines.dModel.dl.DatabaseTableField dlDatabaseTableField=new com.thinking.machines.dModel.dl.DatabaseTableField();
+try
+{
+DataManager dataManager=new DataManager();
+dataManager.begin();
+for(com.thinking.machines.dModel.services.pojo.ClientDatabaseTable c:cc)
+{
+
+String name=c.getName(); // table ka name
+String note=c.getNote(); //table ka note
+int numberOfFields=c.getNumberOfFields();
+int xLocation=c.getXLocation();
+int yLocation=c.getYLocation();
+
+
+dlDatabaseTable.setProjectCode(projectCode);
+dlDatabaseTable.setName(name);
+dlDatabaseTable.setNote(note);
+dlDatabaseTable.setNumberOfFields(numberOfFields);
+dlDatabaseTable.setXLocation(xLocation);
+dlDatabaseTable.setYLocation(yLocation);
+dlDatabaseTable.setDatabaseEngineCode(1);
+dataManager.insert(dlDatabaseTable);
+
+
+List<ClientField> fields=c.getFields();
+for(ClientField cf:fields)
+{
+dlDatabaseTableField.setTableCode(1);
+dlDatabaseTableField.setName(cf.getName());
+dlDatabaseTableField.setDatabaseArchitectureDataTypeCode(1);
+dlDatabaseTableField.setWidth(cf.getWidth());
+dlDatabaseTableField.setNumberOfDecimalPlaces(cf.getNumberOfDecimalPlaces());
+dlDatabaseTableField.setIsPrimaryKey(cf.getIsPrimaryKey());
+dlDatabaseTableField.setIsAutoIncrement(cf.getIsAutoIncrement());
+dlDatabaseTableField.setIsUnique(cf.getIsUnique());
+dlDatabaseTableField.setIsNotNull(cf.getIsNotNull());
+dlDatabaseTableField.setDefaultValue(cf.getDefaultValue());
+dlDatabaseTableField.setNote(cf.getNote());
+dlDatabaseTableField.setCheckConstraint(" ");
+dataManager.insert(dlDatabaseTableField);
+}//fields wala for
+
+}//for bada wala
+System.out.println("Chal Gya");
+dataManager.end();
+}catch(Exception validatorException)
+{
+System.out.println(validatorException.getMessage());
+}
+
+}//function
+*/
+}//class

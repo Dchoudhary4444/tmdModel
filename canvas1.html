@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Project View</title>
+
+<!-- Bootstrap core CSS-->
+<link href="/tmdModel/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Custom fonts for this template-->
+<link href="/tmdModel/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+
+<!-- Page level plugin CSS-->
+<link href="/tmdModel/vendor/datatables/dataTables.bootstrap4.css" rel="stylesheet">
+
+<!-- Custom styles for this template-->
+<link href="/tmdModel/css/sb-admin.css" rel="stylesheet">
+
+<link href="/tmdModel/JQuery/fontAwesome.css" rel="stylesheet">
+
+<!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"-->
+
+
+<!--link href="/tmdModel/JQuery/bootstrap.min.css" rel="stylesheet" -->
+
+    
+<script src="/tmdModel/JQuery/jquery-3.3.1.min.js"></script>
+<script src="/tmdModel/JQuery/bootstrap.min.js"></script>
+
+
+
+<script>
+var canvasId=null;
+var canvasDiv=null;
+var e;
+var selectedOption=0;
+tablesName=[];
+var tableValues=[];
+var tableComponents=[];
+function initialize()
+{
+canvasId=document.getElementById("canvas");
+canvasId.addEventListener("click",DomouseDown,false);
+e=canvasId.getContext('2d');
+//canvas.addEventListener("mouseup",domouseup,false);
+//canvasId.addEventListener("mousemove",domousemove,false);
+}
+
+
+//top margin,left margin,width,height
+
+function DrawableTable(vX,vY,vDatabaseTable)
+{
+var x=vX;
+var y=vY;
+var databaseTable=vDatabaseTable;
+var height=150;
+var width=150;
+
+this.doubleClick=function()
+{
+var bound = canvasId.getBoundingClientRect();
+var u = parseInt(event.clientX - bound.left - canvasId.clientLeft);
+var v = parseInt(event.clientY - bound.top - canvasId.clientTop);
+
+if((u>=x && u<=(x+width)) && (v>=y && v<=(y+height)))
+{
+$('#table').modal('show');
+}
+}//doubleclick ends here
+
+this.draw=function()
+{
+var z=3;
+e.beginPath();
+e.moveTo(x,(y+50));
+e.font="35px Arial";
+var ordinate=y;
+e.fillText(databaseTable.tableName,(x+(width/2)-50),(y+35));
+e.font="25px Arial";
+var yOffset=y+70;
+var rectWidth=0; 
+var add;
+alert("length"+databaseTable.fields.length)
+for(i=0;i<databaseTable.fields.length;i++)
+{
+//code to compute height and width of table
+add=Math.floor(e.measureText(databaseTable.fields[i]).width);
+alert(add);
+e.fillText(databaseTable.fields[i],(x+z ),(yOffset));
+z+=add+10;
+}
+if(width<z) width=z;
+
+e.lineTo((x+width), (y+50));
+e.rect(x,y,width,height);
+e.stroke();
+selectedOption=0;
+canvasId.addEventListener("dblclick",this.doubleClick);  //change its place
+}
+
+}//drawable table function ends here
+
+
+function DatabaseTableField()
+{
+this.name=null;
+this.width=null;
+this.isPrimaryKey=null;
+this.isAutoIncrement=null;
+this.isUnique=null;
+this.isNotNull=null;
+this.defaultValue=null;
+this.checkConstraint=null;
+
+}// DatabaseTableField function ends here
+
+function DatabaseTable(vTableName)
+{
+this.tableName=vTableName;
+this.engineName=null;
+this.note=null;
+this.fields=[];
+//field=new DatabaseTableField();
+//this.fields.push(this.field);
+
+} //databaseTable function ends here
+
+function TableComponent(vX,vY,tableName)
+{
+this.x=vX;
+this.y=vY;
+this.tableName=tableName;
+this.databaseTable=new DatabaseTable(tableName);
+this.drawableTable=new DrawableTable(this.x,this.y,this.databaseTable);
+this.draw=function(){
+this.drawableTable.draw();
+}
+
+}//table component function ends here
+
+
+function Draw()//componets ke array pe traverse krne wala
+{
+//clear canvas
+alert("canvas Cleared");
+for(i=0;i<tableComponents.length;i++)
+{
+tableComponents[i].draw();
+}
+}
+
+
+
+//----------------------------
+function tableNameGenerator()  //need to change the logic 
+{
+var prefix='table';
+var tableName=prefix+" "+((tablesName.length)+1);
+return tableName;
+}
+
+
+
+function DomouseDown()  //jab table per click ho
+{
+if(selectedOption=='1')
+{
+//tableComponent=null;
+var bound = canvasId.getBoundingClientRect();
+var x = parseInt(event.clientX - bound.left - canvasId.clientLeft);
+var y = parseInt(event.clientY - bound.top - canvasId.clientTop);
+//alert(x+","+y);
+//logic for table name
+
+var tableName=tableNameGenerator(); //update 
+tablesName.push(tableName); //need to change
+tableComponent=new TableComponent(x,y,tableName); 
+tableComponents.push(tableComponent); //inserted component array
+Draw(); //componets ke array pe traverse krne wala
+
+}//if ends here for selected option
+
+}
+
+
+
+
+function createTableButton()
+{
+selectedOption=1;
+}
+
+function dataSaveKarega()
+{
+e.clearRect(0,0,canvasId.width,canvasId.height);
+for(i=0;i<tableComponents.length;i++)
+{
+//alert(tableValues.length);
+var arr=tableValues[i].length;
+for(j=0;j<arr;j++)
+{
+tableComponents[i].databaseTable.fields.push(tableValues[i][j]);
+}
+tableComponents[i].draw();
+}
+}
+/*var a1=["Code","int","no","0"]
+var a2=["Name","char","no","0"]
+var a3=["Class","int","no","0"]
+*/
+
+
+
+//=============================================
+
+function createRow(textValues)
+{
+var InnerTable=document.getElementById('innerTable');
+var rows=InnerTable.getElementsByTagName("tr");
+var columns=rows[0].getElementsByTagName("td");
+//tableValues[rows.length-2]=textValues;
+
+tableValues.push(textValues);
+var newRow = InnerTable.insertRow(rows.length-1);
+var cell=newRow.insertCell(0);
+cell.innerHTML="   "+rows.length-2+". ";
+for(var i=0,g=1;i<textValues.length;i++,g++)
+{
+cell = newRow.insertCell(g);
+if(g==1)
+{
+cell.ondblclick = function () 
+{
+if(this.childElementCount<1)
+{
+var img = document.createElement('img');
+img.src = '/tmdModel/images/key.png';
+this.appendChild(img);
+}
+}
+}
+
+cell.innerHTML = textValues[i];
+}
+
+$('#fieldText').val(" ");
+$("#typeText").val(" ");
+$("#constraintText").val(" ");
+$('#defaultText').val(" ");
+$('#sNo').text(rows.length-1+".");
+}
+function addRow()
+{
+var fieldText=$('#fieldText');
+var typeText=$("#typeText");
+var constraintText=$("#constraintText");
+var defaultText=$('#defaultText');
+var isFocus;
+if(!fieldText.val().trim())
+{
+fieldText.addClass("is-invalid");
+if(!isFocus) fieldText.focus();
+isFocus=true;
+}
+else
+{
+fieldText.removeClass("is-invalid");
+}
+if(!typeText.val().trim())
+{
+typeText.addClass("is-invalid");
+if(!isFocus)typeText.focus();
+isFocus=true;
+}
+else
+{
+typeText.removeClass("is-invalid");
+}
+if(!constraintText.val().trim())
+{
+constraintText.addClass("is-invalid");
+if(!isFocus)constraintText.focus();
+isFocus=true;
+}
+else
+{
+constraintText.removeClass("is-invalid");
+}
+if(!defaultText.val().trim())
+{
+defaultText.addClass("is-invalid");
+if(!isFocus)defaultText.focus();
+isFocus=true;
+}
+else
+{
+defaultText.removeClass("is-invalid");
+}
+
+
+if(!isFocus)
+{
+var textValues=[];
+textValues.push(fieldText.val().trim());
+textValues.push(typeText.val().trim());
+textValues.push(constraintText.val().trim());
+textValues.push(defaultText.val().trim());
+createRow(textValues);
+}
+
+}
+
+</script>
+
+
+</head>
+
+<body onLoad=initialize()>
+<!-- Modal -->
+<div class="modal fade" id="table" role="dialog" data-backdrop='static' >
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+
+<div class="form-group">
+ 
+<div class='form-row'>
+<div class="form-label-group">
+                
+<input type="text" id='tableNameText' class="form-control" placeholder="Table Name"   required="required"   autofocus="autofocus">
+
+<label for="tableNameText">Table Name</label>
+
+</div>
+            
+</div>
+</div>
+</div>
+
+<div class="modal-body" style="overflow-x:scroll">
+<table border='2' class="table table-striped table-bordered table-sm" cellspacing="2" width="100%">
+<tr>
+<td><h3>&nbsp;&nbsp;Table&nbsp;&nbsp;</h3></td>
+<td><h3>&nbsp;&nbsp;Attributes&nbsp;&nbsp;</h3>
+<table border='1' id='innerTable'>
+<thead>
+<tr>
+<td><h4>&nbsp;&nbsp;S.no&nbsp;&nbsp;</h4></td>
+<td><h4>&nbsp;&nbsp;Fields&nbsp;&nbsp;</h4></td>
+<td><h4>&nbsp;&nbsp;Type&nbsp;&nbsp;</h4></td>
+<td><h4>&nbsp;&nbsp;Constraint&nbsp;&nbsp;</h4></td>
+<td><h4>&nbsp;&nbsp;Default&nbsp;&nbsp;</h4></td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+</tr>
+<tr>
+<td><span id='sNo'>&nbsp;&nbsp;1. </span></td>
+<td><input type='text' id='fieldText'></td>
+<td><input type='text' id='typeText'></td>
+<td><input type='text' id='constraintText'></td>
+<td><input type='text' id='defaultText'></td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+</tr>
+</thead>
+
+</table>
+</td>
+<td></td>
+
+</tr>
+</table>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-default"  onclick='addRow()'>Create new Row</button>
+<button type="button" class="btn btn-default" data-toggle="modal" data-dismiss="modal" data-target="#tableCloseModal" aria-label="Close">Close</button>
+
+</div>
+</div>
+</div>
+</div>
+
+
+<nav class="navbar navbar-expand navbar-dark bg-dark static-top">
+<h1 class="navbar-brand mr-0">Menu</h1>
+<button class="btn btn-link btn-sm text-white order-1 order-sm-0" id="sidebarToggle" href="#">
+<i class="fas fa-bars"></i>
+</button>
+
+
+<!-- Navbar -->
+<ul class="navbar-nav ml-auto mr-md-3">
+<h1 class="navbar-brand mr-0 text-white" aria-haspopup="true" aria-expanded="false">    
+<i class="fas fa-user-circle fa-fw">
+</i>
+</h1>
+</ul>
+</nav>
+
+<div id="wrapper">
+<!-- Sidebar -->
+<ul class="sidebar navbar-nav">
+<li class="nav-item active">
+<a class="nav-link" href="#" data-toggle="modal" data-target="#closeProjectModal">
+<!-- i class="fas fa-fw fa-tachometer-alt"></i-->
+<span>Close</span>
+</a>
+</li>
+
+
+
+
+<!--table close Modal-->
+<div class="modal fade" id="tableCloseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop='static'>
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title">Do you want to save changes ?</h5>
+<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body">Click on save to save changes.</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+<button class="btn btn-secondary" type="button" data-dismiss="modal" onclick='dataSaveKarega()'>Save</button>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+<!-- project close modal-->
+
+<div class="modal fade" id="closeProjectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop='static'>
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="exampleModalLabel">Do you want to save changes ?</h5>
+<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body">Click on save to save changes.</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+<a class="btn btn-primary" href="/tmdModel/homepage.jsp">Save</a>
+</div>
+</div>
+</div>
+</div>
+
+<!--project close Modal khatam -->
+
+
+
+
+
+
+<li class="nav-item active">
+<a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">
+<!-- i class="fas fa-fw fa-tachometer-alt"></i-->
+<span>Logout</span>
+</a>
+</li>
+</ul>
+
+<div id="content-wrapper">
+<div class="container-fluid">
+
+
+<!-- Area Chart Example-->
+ <div class="card mb-3">
+  <div class="card-header">
+<i class="fas fa-chart-area"></i>
+</div>
+<div class="card-header">
+<div class="container-fluid">
+<div class="btn-toolbar" role="toolbar">
+
+<div class="btn-group mr-1" role="group">
+<button type="button" class="btn btn-primary bg-dark" data-toggle="tooltip" title="Create Table" onclick='createTableButton()'><i class="fas fa-table"></i></button>
+</div>
+
+<div class="btn-group text-white" role="group">
+<button type="button" class="btn btn-primary bg-dark" data-toggle="tooltip" title="Save"><i class="fas fa-save"></i></button>
+</div>
+
+
+
+</div>
+</div>
+</div>
+
+
+<div class="card-body" id="canvasDiv" style="max-height: 600px;overflow: scroll;">
+<canvas id="canvas" width="1380" height="1000" style="border:1px solid"></canvas>
+</div>
+</div>
+<!-- Area Chart Ends -->
+
+
+
+<!-- /.container-fluid -->
+
+<!-- Sticky Footer -->
+<footer class="sticky-footer">
+<div class="container my-auto">
+<div class="copyright text-center my-auto">
+<span>Copyright ©Thinking Machines 2019</span>
+</div>
+</div>
+</footer>
+
+</div>
+<!-- /.content-wrapper -->
+</div>
+<!-- /#wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+<i class="fas fa-angle-up"></i>
+</a>
+
+<!-- Logout Modals-->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop='static'>
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+<a class="btn btn-primary" href="/tmdModel/webservice/memberService/logout">Logout</a>
+</div>
+</div>
+      </div>
+    </div>
+
+
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="createProjectModal" role="dialog" data-backdrop='static'>
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+<h4 class="modal-title">Create Project</h4>          
+<button type="button" class="close" data-dismiss="modal">&times;</button>
+          
+        </div>
+        <div class="modal-body">
+          <form method='Post' id='modalCreateProject' action='/tmdModel/webservice/projectService/create' novalidate>
+
+<div class="form-group">
+              
+<div class="form-label-group">
+                
+<input type="text" id="projectTitle" name="argument-1" class="form-control" placeholder="Project Title "   required="required"   autofocus="autofocus">
+                
+<label for="projectTitle">Project Title</label>
+              
+</div>
+            
+</div>
+
+<h6>
+<b>Select Database Architecture</b>
+<select name='argument-2' id='projectArchitecture'>
+<option value='-1'>&lt;Select&gt;</option>
+<option value='1'>MySql</option>
+<option value='3'>Apache Derby</option>
+<option value='2'>Oracle</option>
+</select>
+</h6>
+
+         </div>
+        <div class="modal-footer">
+          <input type="submit" class="btn btn-default" value='Create' >
+<button type="button" class="btn btn-default"  data-dismiss="modal">Close</button>
+	         
+</div>
+      </div>
+</form>
+
+    </div>
+  </div>
+
+
+
+
+<!-- Bootstrap core JavaScript-->
+    <script src="/tmdModel/vendor/jquery/jquery.min.js"></script>
+    <script src="/tmdModel/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="/tmdModel/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    
+    <!-- Custom scripts for all pages-->
+    <script src="/tmdModel/js/sb-admin.min.js"></script>
+
+    <!-- Demo scripts for this page-->
+  
+  </body>
+
+</html>

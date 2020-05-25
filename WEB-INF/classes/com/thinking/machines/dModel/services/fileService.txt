@@ -1,0 +1,56 @@
+package com.thinking.machines.car_project;
+import com.thinking.machines.tmws.*;
+import com.thinking.machines.tmws.annotations.*;
+import com.thinking.machines.dmframework.exceptions.*;
+import com.thinking.machines.dmframework.*;
+import java.util.*;
+import java.io.*;
+@Path("/fileUpload")
+public class fileService
+{
+private List<File> files;
+private File directory;
+public void setDirectory(File file)
+{
+this.directory=directory;
+}
+public void setFiles(List<File> files)
+{
+this.files=files;
+}
+@InjectDirectory
+@InjectFiles(size=90)   // max allowed size is 90MB
+@Post
+@Path("golu")
+public Object postG()
+{
+System.out.println("Directory : "+directory.getAbsolutePath());
+
+if(files==null || files.size()==0)
+{
+return new ServiceException("You forgot to set File");
+}
+FileUploadWrapper fileUploadWrapper;
+File file;
+File targetFile;
+for(File f:files)
+{
+fileUploadWrapper= (FileUploadWrapper) f;
+file=fileUploadWrapper.getFile();
+if(fileUploadWrapper.getFileName()==null || fileUploadWrapper.getFileName().trim().length()==0)return new ServiceException("File name is not valid or Empty");
+System.out.println(file.getAbsolutePath());
+System.out.println(fileUploadWrapper.getFileName());
+targetFile=new File(directory.getAbsolutePath()+"/WEB-INF/myfiles/"+fileUploadWrapper.getFileName());
+try
+{
+if(targetFile.exists()) targetFile.delete();
+java.nio.file.Files.copy(file.toPath(),targetFile.toPath());
+fileUploadWrapper.isTemporary(true); // file will be deleted from uploads folder
+}catch(IOException ioException)
+{
+return new ServiceException("Unable to upload file");
+}
+}
+return "Done";
+}
+}

@@ -1,0 +1,706 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Project View</title>
+
+<!-- Bootstrap core CSS-->
+<link href="/tmdModel/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Custom fonts for this template-->
+<link href="/tmdModel/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+
+<!-- Page level plugin CSS-->
+<link href="/tmdModel/vendor/datatables/dataTables.bootstrap4.css" rel="stylesheet">
+
+<!-- Custom styles for this template-->
+<link href="/tmdModel/css/sb-admin.css" rel="stylesheet">
+
+<link href="/tmdModel/JQuery/fontAwesome.css" rel="stylesheet">
+
+<!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"-->
+
+
+<!--link href="/tmdModel/JQuery/bootstrap.min.css" rel="stylesheet" -->
+
+    
+<script src="/tmdModel/JQuery/jquery-3.3.1.min.js"></script>
+<script src="/tmdModel/JQuery/bootstrap.min.js"></script>
+
+
+
+<script>
+var canvasId=null;
+var canvasDiv=null;
+var e;
+var selectedOption=0;
+var tablesName=[];
+var tableValues=[];
+var tableComponents=[];
+var selectedTable=null;
+function initialize()
+{
+canvasId=document.getElementById("canvas");
+canvasId.addEventListener("click",DomouseDown,false);
+canvasId.addEventListener("dblclick",doMouseDoubleClick); 
+e=canvasId.getContext('2d');
+}
+
+
+//===================new
+function doMouseDoubleClick()
+{
+var bound = canvasId.getBoundingClientRect();
+var x = parseInt(event.clientX - bound.left - canvasId.clientLeft);
+var y = parseInt(event.clientY - bound.top - canvasId.clientTop);
+alert("mouseDoubleClicked  "+ x+","+ y)
+selectedTable=isTableClicked(x,y)
+if(selectedTable!=null)
+{
+$('#table').modal('show');
+}
+}//dbclick ends
+//top margin,left margin,width,height
+
+function isTableClicked(x,y)
+{
+var drawableTable;
+var a=[];
+for(var j=0;j<tableComponents.length;j++)
+{
+drawableTable=tableComponents[j].drawableTable;
+a=(drawableTable.getInfo());
+
+if((x>=a[0] && x<=(a[0]+a[2])) && (y>=a[1] && y<=(a[1]+a[3])))
+{
+return drawableTable; 
+}
+}//for ends
+return null;
+}
+
+function updateTableInformation()
+{
+var fields=[];
+var databaseTableField=null;
+var textValues=[];
+for(var i=0;i<tableValues.length;i++)
+{
+databaseTableField=new DatabaseTableField();
+textValues=tableValues[i];
+databaseTableField.name=textValues["field"];
+databaseTableField.isPrimaryKey=textValues["primaryKey"];
+databaseTableField.defaultValue=textValues["default"];
+databaseTableField.type=textValues["type"];
+databaseTableField.isAutoIncrement=null;
+databaseTableField.isUnique=null;
+databaseTableField.isNotNull=null;
+databaseTableField.checkConstraint=textValues["constraint"];
+fields.push(databaseTableField);
+}//outer for loop
+selectedTable.getDatabaseTable().setFields(fields);
+fields=selectedTable.getDatabaseTable().getFields();
+alert(fields.length);
+//alert("value is"+fields[0].name);
+//alert("value is"+fields[1].name);
+}//function ends here
+
+function DatabaseTableField()
+{
+this.name=null;
+this.width=null;
+this.isPrimaryKey=null;
+this.type=null;
+this.isAutoIncrement=null;
+this.isUnique=null;
+this.isNotNull=null;
+this.defaultValue=null;
+this.checkConstraint=null;
+}// DatabaseTableField function ends here
+
+
+
+
+
+//================
+
+function DrawableTable(vX,vY,vDatabaseTable)
+{
+var x=vX;
+var y=vY;
+var databaseTable=vDatabaseTable;
+var height=150;
+var width=150;
+this.draw=function()
+{
+e.beginPath();
+e.moveTo(x,(y+50));
+e.font="35px Arial";
+e.fillText(databaseTable.tableName,(x+(width/2)-50),(y+35));
+e.lineTo((x+width), (y+50));
+e.rect(x,y,width,height);
+e.stroke();
+selectedOption=0;
+}
+this.getInfo=function()
+{
+var a=[x,y,width,height];
+return a;
+}
+this.getDatabaseTable=function()
+{
+return databaseTable;
+}
+}//drawable table function ends here
+
+
+function DatabaseTable(vTableName)
+{
+this.tableName=vTableName;
+this.engineName=null;
+this.note=null;
+this.fields=[];
+this.setFields=function(fields)
+{
+this.fields=fields;
+}
+this.getFields=function(){
+return this.fields;
+}
+
+} //databaseTable function ends here
+
+function TableComponent(vX,vY,tableName)
+{
+this.x=vX;
+this.y=vY;
+this.tableName=tableName;
+this.databaseTable=new DatabaseTable(tableName);
+this.drawableTable=new DrawableTable(this.x,this.y,this.databaseTable);
+this.draw=function()
+{
+this.drawableTable.draw();
+}
+
+
+}//table component function ends here
+
+
+function Draw()//componets ke array pe traverse krne wala
+{
+alert("table component ki length"+tableComponents.length);
+//canvas clear logic
+e.clearRect(0,0,canvasId.width,canvasId.height);
+for(i=0;i<tableComponents.length;i++)
+{
+tableComponents[i].draw();
+}
+}
+
+//----------------------------
+function tableNameGenerator()  //need to change the logic 
+{
+var prefix='table';
+var tableName=prefix+" "+((tablesName.length)+1);
+return tableName;
+}
+
+function DomouseDown()  //jab table per click ho
+{
+if(selectedOption=='1')
+{
+var bound = canvasId.getBoundingClientRect();
+var x = parseInt(event.clientX - bound.left - canvasId.clientLeft);
+var y = parseInt(event.clientY - bound.top - canvasId.clientTop);
+var tableName=tableNameGenerator(); //update 
+tablesName.push(tableName); //need to change
+var tableComponent=new TableComponent(x,y,tableName); 
+tableComponents.push(tableComponent); //inserted component array
+Draw(); //componets ke array pe traverse krne wala
+}//if ends here for selected option
+}//mouse down function ends here
+
+function createTableButton()
+{
+selectedOption=1;
+}
+
+
+
+//=============================================
+var info=[];
+info["field"]="code";
+info["type"]="int";
+info["constraint"]="no";
+info["default"]=0;
+info["primaryKey"]=true;
+tableValues.push(info);
+var info1=[];
+
+info1["field"]="name";
+info1["type"]="int";
+info1["constraint"]="no";
+info1["default"]=0;
+info1["primaryKey"]=true;
+tableValues.push(info1);
+//testing
+
+function createRow(textValues)
+{
+var InnerTable=document.getElementById('innerTable');
+var rows=InnerTable.getElementsByTagName("tr");
+var columns=rows[0].getElementsByTagName("td");
+//tableValues[rows.length-2]=textValues;
+
+tableValues.push(textValues);
+var newRow = InnerTable.insertRow(rows.length-1);
+var cell=newRow.insertCell(0);
+cell.innerHTML="   "+rows.length-2+". ";
+
+for(var i=0,g=1;i<textValues.length;i++,g++)
+{
+cell = newRow.insertCell(g);
+if(g==1)
+{
+cell.ondblclick = function () 
+{
+if(this.childElementCount<1)
+{
+var img = document.createElement('img');
+img.src = '/tmdModel/images/key.png';
+this.appendChild(img);
+}
+}
+}
+
+cell.innerHTML = textValues[i];
+}
+
+$('#fieldText').val(" ");
+//$("#typeText").val(" ");
+$("#constraintText").val(" ");
+$('#defaultText').val(" ");
+$('#sNo').text(rows.length-1+".");
+}
+function addRow()
+{
+var fieldText=$('#fieldText');
+var defaultText=$('#defaultText');
+var dataType=$('#dataType').val()
+
+var notNull=document.getElementById("nn");
+var primaryKey=document.getElementById("pk");
+var uniqueKey=document.getElementById("unq");
+var autoIncrement=document.getElementById("a+");
+
+var isFocus;
+var isPrimaryKey=false;
+var isNotNull=false;
+var isUniqueKey=false;
+var isAutoIncrement=false;
+if(notNull.checked==true) isNotNull=true;
+if(primaryKey.checked==true) isPrimaryKey=true;
+if(uniqueKey.checked==true) isUniqueKey=true;
+if(autoIncrement.checked==true) isAutoIncrement=true;
+if(!fieldText.val().trim())
+{
+fieldText.addClass("is-invalid");
+if(!isFocus) fieldText.focus();
+isFocus=true;
+}
+else
+{
+fieldText.removeClass("is-invalid");
+}
+
+if(!defaultText.val().trim())
+{
+defaultText.addClass("is-invalid");
+if(!isFocus)defaultText.focus();
+isFocus=true;
+}
+else
+{
+defaultText.removeClass("is-invalid");
+}
+if(!isFocus)
+{
+var textValue=[];
+textValue["field"]=fieldText.val().trim();
+textValue["type"]=dataType;
+textValue["default"]=defaultText.val().trim();
+textValue["primaryKey"]=isPrimaryKey;
+textValue["uniqueKey"]=isUniqueKey;
+textValue["notNull"]=isNotNull;
+textValue["autoIncrement"]=isAutoIncrement;
+createRow(textValue);
+}
+
+}
+function deleteRow()
+{
+alert("deleteRow");
+}
+function editRow()
+{
+alert("editRow");
+}
+function changeCheckbox(value)
+{
+if(value=="char" || value=="varchar") 
+{
+var d=document.getElementById("a+")
+d.checked=false;
+d.disabled= true;
+}
+else document.getElementById("a+").disabled= false;
+}
+
+</script>
+
+
+</head>
+
+<body onLoad=initialize()>
+<!-- Modal -->
+<div class="modal fade" id="table" role="dialog" data-backdrop='static' >
+<div  class="modal-dialog modal-lg">
+<div class="modal-content" >
+<div class="modal-header">
+
+<div class="form-group">
+ 
+<div class='form-row'>
+<div class="form-label-group">
+                
+<input type="text" id='tableNameText' class="form-control" placeholder="Table Name"   required="required"   autofocus="autofocus">
+
+<label for="tableNameText">Table Name</label>
+
+</div>
+            
+</div>
+</div>
+</div>
+
+<div class="modal-body" style="overflow-x:scroll">
+<table border='2' class="table table-striped table-bordered table-sm " cellspacing="2" width="100%" >
+<tr>
+<td><h3>&nbsp;&nbsp;Table&nbsp;&nbsp;</h3></td>
+<td><h3>&nbsp;&nbsp;Attributes&nbsp;&nbsp;</h3>
+<table border='1' id='innerTable'>
+<thead>
+<tr>
+<td><h4>&nbsp;&nbsp;S.no&nbsp;&nbsp;</h4></td>
+<td><h4>&nbsp;&nbsp;Fields&nbsp;&nbsp;</h4></td>
+<td><h4>&nbsp;&nbsp;Type&nbsp;&nbsp;</h4></td>
+<td><h4>&nbsp;&nbsp;Constraint&nbsp;&nbsp;</h4></td>
+<td><h4>&nbsp;&nbsp;Default&nbsp;&nbsp;</h4></td>
+<td><h4>&nbspEdit&nbsp </h4></td>
+<td><h4>&nbsp&nbspDelete&nbsp;</h4></td>
+
+</tr>
+<tr>
+<td><span id='sNo'>&nbsp;&nbsp;1. </span></td>
+<td><input type='text' id='fieldText'></td>
+<td>
+
+<div class='form-group'>
+
+<select class="from-control" id='dataType' onchange="changeCheckbox(this.value)">
+<option >int</option>
+<option >char</option>
+<option >varchar</option>
+<option >boolean</option>
+<option >date</option>
+<option >time</option>
+<option >float</option>
+<option >double</option>
+</select>
+</div>
+ 
+</td>
+<td>
+<h5>
+nn<input type="checkbox" id="nn" name="nn" value="nn" style="zoom:1.5;">&nbsp;&nbsp;
+pk <input type="checkbox" id="pk" name="pk" value="pk" style="zoom:1.5;"><br/>
+unq<input type="checkbox" id="unq" name="unq" value="unq" style="zoom:1.5;">&nbsp;
+a++<input type="checkbox" id="a+" name="a+" value="a+" style="zoom:1.5;">
+</h5>
+</td>
+<td>
+<input type='text' id='defaultText'></td>
+<td>Edit</td>
+<td>Delete</td>
+</tr>
+
+</thead>
+
+</table>
+</td>
+<td></td>
+
+</tr>
+</table>
+<button type="button" class="btn btn-secondary"  onclick='addRow()'>Create new Row</button>
+
+<div class='form-group'>
+<label for="engine"><h4>database-engine :</h4></label>
+<select class="from-control" id='engine' >
+<option>InnoDb</option>
+<option>BlackHole</option>
+</select>
+</div>
+
+<div class="form-group">
+<lable for="note"><h4>Note :<h4></lable>
+<textarea class='form-control' rows="5" id="note"></textarea>
+</div>
+
+
+</div>
+<div class="modal-footer">
+<button class="btn btn-primary" type="button" data-dismiss="modal" onclick='updateTableInformation()'>Save</button>
+
+<button type="button" class="btn btn-secondary"   data-dismiss="modal">Close</button>
+
+</div>
+</div>
+</div>
+</div>
+
+
+<nav class="navbar navbar-expand navbar-dark bg-dark static-top">
+<h1 class="navbar-brand mr-0">Menu</h1>
+<button class="btn btn-link btn-sm text-white order-1 order-sm-0" id="sidebarToggle" href="#">
+<i class="fas fa-bars"></i>
+</button>
+
+
+<!-- Navbar -->
+<ul class="navbar-nav ml-auto mr-md-3">
+<h1 class="navbar-brand mr-0 text-white" aria-haspopup="true" aria-expanded="false">    
+<i class="fas fa-user-circle fa-fw">
+</i>
+</h1>
+</ul>
+</nav>
+
+<div id="wrapper">
+<!-- Sidebar -->
+<ul class="sidebar navbar-nav">
+<li class="nav-item active">
+<a class="nav-link" href="#" data-toggle="modal" data-target="#closeProjectModal">
+<!-- i class="fas fa-fw fa-tachometer-alt"></i-->
+<span>Close</span>
+</a>
+</li>
+
+
+
+
+<!--table close Modal-->
+<div class="modal fade" id="tableCloseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop='static'>
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title">Do you want to save changes ?</h5>
+<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body">Click on save to save changes.</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+<button class="btn btn-secondary" type="button" data-dismiss="modal" onclick='updateTableInformation()'>Save</button>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+<!-- project close modal-->
+
+<div class="modal fade" id="closeProjectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop='static'>
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="exampleModalLabel">Do you want to save changes ?</h5>
+<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body">Click on save to save changes.</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+<a class="btn btn-primary" href="/tmdModel/homepage.jsp">Save</a>
+</div>
+</div>
+</div>
+</div>
+
+<!--project close Modal khatam -->
+
+
+
+
+<li class="nav-item active">
+<a class="nav-link" href="#" data-toggle="modal" data-target="#logoutModal">
+<!-- i class="fas fa-fw fa-tachometer-alt"></i-->
+<span>Logout</span>
+</a>
+</li>
+</ul>
+
+<div id="content-wrapper">
+<div class="container-fluid">
+
+
+<!-- Area Chart Example-->
+ <div class="card mb-3">
+  <div class="card-header">
+<i class="fas fa-chart-area"></i>
+</div>
+<div class="card-header">
+<div class="container-fluid">
+<div class="btn-toolbar" role="toolbar">
+
+<div class="btn-group mr-1" role="group">
+<button type="button" class="btn btn-primary bg-dark" data-toggle="tooltip" title="Create Table" onclick='createTableButton()'><i class="fas fa-table"></i></button>
+
+</div>
+
+<div class="btn-group text-white" role="group">
+<button type="button" class="btn btn-primary bg-dark" data-toggle="tooltip" title="Save"><i class="fas fa-save"></i></button>
+</div>
+
+
+
+</div>
+</div>
+</div>
+
+
+<div class="card-body" id="canvasDiv" style="max-height: 600px;overflow: scroll;">
+<canvas id="canvas" width="1380" height="1000" style="border:1px solid"></canvas>
+</div>
+</div>
+<!-- Area Chart Ends -->
+
+
+
+<!-- /.container-fluid -->
+
+<!-- Sticky Footer -->
+<footer class="sticky-footer">
+<div class="container my-auto">
+<div class="copyright text-center my-auto">
+<span>Copyright ©Thinking Machines 2019</span>
+</div>
+</div>
+</footer>
+
+</div>
+<!-- /.content-wrapper -->
+</div>
+<!-- /#wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+<i class="fas fa-angle-up"></i>
+</a>
+
+<!-- Logout Modals-->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop='static'>
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+<a class="btn btn-primary" href="/tmdModel/webservice/memberService/logout">Logout</a>
+</div>
+</div>
+      </div>
+    </div>
+
+
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="createProjectModal" role="dialog" data-backdrop='static'>
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+<h4 class="modal-title">Create Project</h4>          
+<button type="button" class="close" data-dismiss="modal">&times;</button>
+          
+        </div>
+        <div class="modal-body">
+          <form method='Post' id='modalCreateProject' action='/tmdModel/webservice/projectService/create' novalidate>
+
+<div class="form-group">
+              
+<div class="form-label-group">
+                
+<input type="text" id="projectTitle" name="argument-1" class="form-control" placeholder="Project Title "   required="required"   autofocus="autofocus">
+                
+<label for="projectTitle">Project Title</label>
+              
+</div>
+            
+</div>
+
+<h6>
+<b>Select Database Architecture</b>
+<select name='argument-2' id='projectArchitecture'>
+<option value='-1'>&lt;Select&gt;</option>
+<option value='1'>MySql</option>
+<option value='3'>Apache Derby</option>
+<option value='2'>Oracle</option>
+</select>
+</h6>
+
+         </div>
+        <div class="modal-footer">
+          <input type="submit" class="btn btn-default" value='Create' >
+<button type="button" class="btn btn-default"  data-dismiss="modal">Close</button>
+	         
+</div>
+      </div>
+</form>
+
+    </div>
+  </div>
+
+
+
+
+<!-- Bootstrap core JavaScript-->
+    <script src="/tmdModel/vendor/jquery/jquery.min.js"></script>
+    <script src="/tmdModel/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="/tmdModel/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    
+    <!-- Custom scripts for all pages-->
+    <script src="/tmdModel/js/sb-admin.min.js"></script>
+
+    <!-- Demo scripts for this page-->
+  
+  </body>
+
+</html>

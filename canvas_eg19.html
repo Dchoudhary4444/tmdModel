@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<title>canvas Example</title>
+<script>
+var rectArray=[];
+var clickedElement=false;
+var mousemoved=false;
+var mouseDown=false;
+var mouseKey=null;
+var selectedRectObject=null;
+var selectedRectObjectIndex=null;
+var rightMouseClickedObject=null;
+var rightMouseClickedObjectIndex=null
+var rectImage;
+
+//contextMenu
+var contextMenuPopup=false;
+var contextMenu=null;
+var canvasContextMenuOptionsList=["create Re","create Circle","create Line","cancel","save"];
+var rectAngleContextMenuOptionsList=["change color","change Width","change Height","add Text","delete","cancel"];
+
+function initialize()
+{
+var canvas=document.getElementById("rectdrawCanvas");
+canvas.addEventListener("mousedown",domouseDown,false);
+canvas.addEventListener("mouseup",domouseup,false);
+canvas.addEventListener("mousemove",domousemove,false);
+}
+
+
+function contextMenuItem()
+{
+var x;
+var y;
+var x1coordinate;
+var y1coordinate;
+var x2coordinate;
+var y2coordinate;
+var width;
+var color="red";
+var text;
+var font= "20px Comic Sans MS";
+var targetFontColor="Black";
+
+}
+
+function ContextMenu(containerId)
+{
+var containerId=containerId;
+var xcoordinate;
+var ycoordinate;
+var width;
+var height;
+var backgroundColor="LightGray";
+var previousData=null;;
+var contextMenuItems=[];
+var targetFieldColor="gray";
+This=this;
+
+this.prepare=function()
+{
+var canvas=document.getElementById("rectdrawCanvas");
+var ctx=canvas.getContext("2d")
+This.previousData=ctx.getImageData(0,0, canvas.width,canvas.height);
+}
+
+this.close=function()
+{
+var canvas=document.getElementById("rectdrawCanvas");
+var ctx=canvas.getContext("2d");
+ctx.putImageData(This.previousData,0,0);
+}
+this.setContextMenuItem=function(g,item)
+{
+contextMenuItems[g]=item;
+}
+this.getContextMenuItems=function()
+{
+return contextMenuItems;
+}
+This.getSelectedOption=function()
+{
+var c=document.getElementById(This.containerId);
+var x=event.clientX-c.offsetLeft;
+var y=event.clientY-c.offsetTop;
+
+var x1=This.xcoordinate;
+var x2=x1+This.width;
+var y1=This.ycoordinate;
+var y2= y1+This.height;
+	if((x>= x1 && x<= x2) && (y>=y1 && y<=y2))
+	{
+	var ItemArray=This.getContextMenuItems();
+		for(var t=0;t<ItemArray.length;t++)
+		{
+		var x1coordi=ItemArray[t].x1coordinate;
+		var x2coordi=ItemArray[t].x2coordinate;
+		var y1coordi=ItemArray[t].y1coordinate;
+		var y2coordi=ItemArray[t].y2coordinate;
+		var ttt=ItemArray[t].text;
+			if((x>= x1coordi && x<=x2coordi) && (y>=y1coordi && y<= y2coordi)) return ttt;
+
+		}
+	}
+
+}
+
+This.draw=function(containerId,optionsList,Object)
+{
+This.containerId=containerId;
+var c=document.getElementById(This.containerId);
+var context=c.getContext("2d");
+var x=event.clientX-c.offsetLeft;
+var y=event.clientY-c.offsetTop;
+This.xcoordinate=x;
+This.ycoordinate=y;
+var fontColor="red";
+var fontType= "20px Comic Sans MS";
+var properties;
+var targetFontColor="black";
+var bgColor="white"
+if(Object!=undefined)
+{
+var c=JSON.stringify(Object)
+properties=JSON.parse(c)
+
+if(properties.backgroundColor!=undefined) This.backgroundColor=properties.backgroundColor;
+else This.backgroundColor="White";
+
+if(properties.width!=undefined) This.width=properties.width;
+else
+{
+optionsList.sort(function(aa, bb){ return aa.length-bb.length})
+ This.width=Math.floor(context.measureText(optionsList[optionsList.length-1]).width)+100;
+}
+if(properties.height!=undefined) This.width=properties.width;
+else This.height=optionsList.length*30;
+
+if(properties.fontType!=undefined) fontType=properties.fontType;
+else fontType = "20px Comic Sans MS";
+
+if(properties.fontColor!=undefined)fontColor=properties.fontColor;
+else fontColor="red";
+
+if(properties.targetFieldColor!=undefined) This.targetFieldColor=properties.targetFieldColor;
+else This.targetFieldColor="Gray"
+if(properties.targetFontColor!=undefined) targetFontColor=properties.targetFontColor;
+else targetFontColor="Black"
+}
+else
+{
+optionsList.sort(function(aa, bb){ return aa.length-bb.length})
+var ff=context.measureText(optionsList[optionsList.length-1]).width;
+This.width=Math.floor(ff)+100;
+This.height=optionsList.length*30;
+This.backgroundColor=bgColor;
+This.targetFieldColor="LightGray"
+}
+context.fillStyle=This.backgroundColor;
+context.fillRect(This.xcoordinate,This.ycoordinate,This.width,This.height,This.backgroundColor);
+context.strokeRect(This.xcoordinate,This.ycoordinate,This.width,This.height,This.backgroundColor);
+context.font=fontType
+context.fillStyle = fontColor;
+var g=optionsList.length-1;
+var t=20;
+for(;g>=0;g--)
+{
+var cmi=new contextMenuItem();
+cmi.x1coordinate=x+10;
+cmi.y=y+t;
+cmi.x=x+10;
+cmi.y1coordinate=(y+t)-20;
+cmi.y2coordinate=cmi.y1coordinate+40;
+cmi.x2coordinate=cmi.x1coordinate+Math.floor(context.measureText(optionsList[g]).width)
+cmi.color=fontColor;
+cmi.text=optionsList[g];
+cmi.font=fontType;
+cmi.targetFontColor=targetFontColor;
+context.fillText(optionsList[g], x+10, y+t); 
+This.setContextMenuItem(g,cmi);
+t=t+30;
+}
+}
+This.reDraw=function(x,y)
+{
+var x1=This.xcoordinate;
+var x2=x1+This.width;
+var y1=This.ycoordinate;
+var y2= y1+This.height;
+if((x>= x1 && x<= x2) && (y>=y1 && y<=y2))
+{
+var ItemArray=This.getContextMenuItems();
+for(var t=0;t<ItemArray.length;t++)
+{
+var x1coordi=ItemArray[t].x1coordinate;
+var x2coordi=ItemArray[t].x2coordinate;
+var y1coordi=ItemArray[t].y1coordinate;
+var y2coordi=ItemArray[t].y2coordinate;
+if((x>= x1coordi && x<=x2coordi) && (y>=y1coordi && y<= y2coordi))
+{
+index=t;
+var c=document.getElementById(This.containerId);
+var context=c.getContext("2d");
+context.clearRect(x1,y1,x2,y2);
+context.fillStyle=This.backgroundColor;
+context.fillRect(This.xcoordinate,This.ycoordinate,This.width,This.height,This.backgroundColor);
+context.strokeRect(This.xcoordinate,This.ycoordinate,This.width,This.height,This.backgroundColor);
+var targetFieldColor=This.targetFieldColor;
+for(var t=0;t<ItemArray.length;t++)
+{
+var xcord=ItemArray[t].x;
+var ycord=ItemArray[t].y;
+var color=ItemArray[t].color;
+var text=ItemArray[t].text;
+var font=ItemArray[t].font;
+var targetFontColor=ItemArray[t].targetFontColor;
+var x2cord=ItemArray[t].x2coordinate;
+var y2cord=ItemArray[t].y2coordinate;
+if(index!=t)
+{
+context.font =font;
+context.fillStyle =color;
+context.fillText(text, xcord, ycord); 
+}
+else
+{
+context.font =font;
+context.clearRect(xcord,xcord,x2-10,y2cord-100);
+context.fillStyle=targetFieldColor;
+context.fillRect(xcord-10,ycord-15,This.width,22,targetFieldColor);
+context.fillStyle =targetFontColor;
+context.fillText(text, xcord, ycord); 
+}
+}
+}
+}
+}
+}
+}
+
+
+function Rectangle()
+{
+var x1coordinate;
+var y1coordinate;
+var x2coordinate;
+var y2coordinate;
+var width;
+var height;
+var color=" ";
+var THIS=this;
+var containerId;
+this.draw=function(containerId,x,y,width,height,color)
+{
+THIS.containerId=containerId;
+var c2=document.getElementById(containerId);
+THIS.x1coordinate=x+c2.offsetLeft;
+THIS.y1coordinate=y+c2.offsetTop;
+THIS.x2coordinate=THIS.x1coordinate+width;
+THIS.y2coordinate=THIS.y1coordinate+height;
+THIS.width=width;
+THIS.height=height;
+THIS.color=color;
+var ctx2=c2.getContext("2d");
+ctx2.fillStyle=color
+ctx2.fillRect(x,y,width,height,color);
+ctx2.strokeRect(x,y,width,height,color);
+}
+this.setValues=function(containerId,x,y,width,height,color)
+{
+THIS.x1coordinate=x;
+THIS.y1coordinate=y;
+THIS.x2coordinate=THIS.x1coordinate+width;
+THIS.y2coordinate=THIS.y1coordinate+height;
+THIS.width=width;
+THIS.height=height;
+THIS.color=color;
+var c2=document.getElementById("rectdrawCanvas")
+var ctx2=c2.getContext("2d");
+ctx2.fillStyle=color
+ctx2.fillRect(x,y,width,height,color);
+ctx2.strokeRect(x,y,width,height,color);
+}
+this.getSelectedRectangle=function(rectArray)
+{
+var x = event.clientX;
+var y = event.clientY;
+var c=[];
+for(var t=0;t<rectArray.length;t++)
+{
+if((x>=rectArray[t].x1coordinate && x<= rectArray[t].x2coordinate) && (y>=rectArray[t].y1coordinate && y<= rectArray[t].y2coordinate))
+{
+c[0]=rectArray[t];
+c[1]=t;
+break;
+}
+}
+return c;
+}
+this.reDrawRectangle=function(rectArray,rectAngle,index,x,y)
+{
+var canvas=document.getElementById("rectdrawCanvas");
+var ctx=canvas.getContext("2d");
+var ImgData=ctx.getImageData(rectAngle.x1coordinate,rectAngle.y1coordinate,rectAngle.width,rectAngle.height);
+ctx.clearRect((rectAngle.x1coordinate)-1,(rectAngle.y1coordinate)-1,(rectAngle.width)+2,(rectAngle.height)+2);
+ctx.putImageData(ImgData,x+canvas.offsetTop,y+canvas.offsetTop);
+rectAngle.x1coordinate=x+canvas.offsetLeft;
+rectAngle.y1coordinate=y+canvas.offsetTop;
+rectAngle.x2coordinate=rectAngle.x1coordinate+rectAngle.width;
+rectAngle.y2coordinate=rectAngle.y1coordinate+rectAngle.height;
+rectArray[index]=rectAngle;
+}
+
+this.reDrawRectangles=function(rectArray)
+{
+var canvas=document.getElementById("rectdrawCanvas");
+var ctx=canvas.getContext("2d");
+ctx.clearRect(0,0,canvas.width,canvas.height);
+for(var t=0;t<rectArray.length;t++)
+{
+ctx.fillStyle=rectArray[t].color
+ctx.fillRect(rectArray[t].x1coordinate-canvas.offsetLeft,rectArray[t].y1coordinate-canvas.offsetTop,rectArray[t].width,rectArray[t].height,rectArray[t].color);
+ctx.strokeRect(rectArray[t].x1coordinate-canvas.offsetLeft,rectArray[t].y1coordinate-canvas.offsetTop,rectArray[t].width,rectArray[t].height,rectArray[t].color);
+}
+}
+
+}
+
+//mouseDown
+
+
+function domouseDown()
+{
+mouseKey=event.button;
+var x = event.clientX;
+var y = event.clientY;
+var coords="x-coordinate : "+x+" y-coordinate : "+y;
+var rectAngle=new Rectangle();
+var selectedRectObjectArray=null;
+if(mouseKey==0)
+{
+var d=rectAngle.getSelectedRectangle(rectArray)
+
+if(d!=null && selectedRectObjectArray==null)
+{
+selectedRectObjectArray=rectAngle.getSelectedRectangle(rectArray);
+selectedRectObject=selectedRectObjectArray[0];
+//document.getElementById("text").value=selectedRectObject.color;
+selectedRectObjectIndex=selectedRectObjectArray[1];
+
+
+
+clickedElement=true;
+mousemoved=false;
+mouseDown=true;
+}
+if(contextMenuPopup==true && contextMenu!=null)
+{
+var optionText=contextMenu.getSelectedOption();
+
+if(optionText=='cancel')
+{
+contextMenuPopup=false;
+contextMenu.close();
+contextMenu=null;
+}
+if(optionText=='create Rectangle')
+{
+rectAngle.setValues("rectdrawCanvas",10,100,100,60,"Gray");
+rectArray.push(rectAngle);
+contextMenu.close();
+contextMenuPopup=false;
+contextMenu=null;
+reDrawCanvas(rectAngle);
+}
+if(optionText=='delete')
+{
+rectArray.splice(rightMouseClickedObjectIndex,1);
+reDrawCanvas(rectAngle);
+contextMenuPopup=false;
+contextMenu=null;
+rightMouseClickedObjectIndex=null;
+rightMouseClickedObject=null;
+}
+if(optionText=='add Text')
+{
+alert('add Text');
+}
+if(optionText=='change color')
+{
+var text=document.getElementById("text");
+
+}
+}
+}
+
+if(mouseKey==2 && contextMenuPopup!=true && contextMenu==null)
+{
+var flag=false;
+for(var t=0;t<rectArray.length;t++)
+{
+if((x>=rectArray[t].x1coordinate && x<= rectArray[t].x2coordinate) && (y>=rectArray[t].y1coordinate && y<= rectArray[t].y2coordinate))
+{
+rightMouseClickedObject=rectArray[t];
+rightMouseClickedObjectIndex=t;
+document.getElementById("text").value=rectArray[t].color;
+contextMenuPopup=true;
+contextMenu=new ContextMenu();
+contextMenu.prepare();
+contextMenu.draw("rectdrawCanvas",rectAngleContextMenuOptionsList,{fontColor:"Black",targetFontColor:"White",targetFieldColor:"green"});
+flag=true;
+}
+}
+if(flag==false)
+{
+contextMenuPopup=true;
+contextMenu=new ContextMenu()
+contextMenu.prepare();
+contextMenu.draw("rectdrawCanvas",canvasContextMenuOptionsList,{fontColor:"Black",targetFontColor:"White",targetFieldColor:"green"});
+}
+}
+
+document.getElementById("demo").innerHTML="mouse down";
+}
+
+//mouseUp
+
+function domouseup()
+{
+var x = event.clientX;
+var y = event.clientY;
+mousemoved=false;
+mouseDown=false;
+clickedElement=false;
+//selectedRectObject=null;
+//selectedRectObjectIndex=null;
+var coords="x-coordinate : "+x+" y-coordinate : "+y;
+document.getElementById("demo").innerHTML="mouse up";
+}
+
+//mouseMove
+
+function domousemove()
+{
+mousemoved=true;
+var canvas=document.getElementById("rectdrawCanvas");
+var ctx=canvas.getContext("2d");
+var x=event.clientX-canvas.offsetLeft;
+var y=event.clientY-canvas.offsetTop;
+if(selectedRectObject!=null && clickedElement==true && mousemoved==true && mouseDown==true)
+{
+//var obj=new Rectangle();
+//obj.setValues(selectedRectObject.containerId,x,y,selectedRectObject.width,selectedRectObject.height,selectedRectObject.color)
+//rectArray[selectedRectObjectIndex]=obj;
+//obj.reDrawRectangles(rectArray);
+selectedRectObject.reDrawRectangle(rectArray,selectedRectObject,selectedRectObjectIndex,event.clientX,event.clientY)
+}
+if(contextMenuPopup==true && contextMenu!=null)
+{
+contextMenu.reDraw(x,y);
+}
+
+var coords="x-coordinate : "+x+" y-coordinate : "+y;
+document.getElementById("demo").innerHTML=coords+" mouse move";
+}
+
+function reDrawCanvas(ob)
+{
+ob.reDrawRectangles(rectArray);
+}
+
+function aaa()
+{
+var obj1=new Rectangle();
+obj1.setValues("rectdrawCanvas",10,10,100,60,"red");
+rectArray[0]=obj1;
+
+var obj2=new Rectangle();
+obj2.setValues("rectdrawCanvas",10,90,100,60,"green");
+rectArray[1]=obj2;
+
+
+var obj3=new Rectangle();
+obj3.setValues("rectdrawCanvas",150,150,100,60,"blue");
+rectArray[2]=obj3;
+
+var obj4=new Rectangle();
+obj4.setValues("rectdrawCanvas",10,200,100,60,"Yellow");
+rectArray[3]=obj4;
+
+}
+window.addEventListener('load',aaa);
+</script>
+<style>
+.text-field
+{
+   position: absolute;
+   bottom:400px;
+   text-align: left;
+   width: 20%;
+   right: 70px;	
+}
+.heading
+{
+position: absolute;
+   bottom:400px;
+   right: 100px;
+}
+</style>
+</head>
+<body onLoad=initialize()>
+<div oncontextmenu="return false"  id='myDiv' name='myDiv' style="max-height: 500px;max-width:800px;overflow: scroll;">
+       <canvas id="rectdrawCanvas" width="1000"  height="10000" ></canvas>
+
+</div>
+
+<h1 class="heading">Text Field</h1>
+<input type='text' id='text' name='text' size='40' class="text-field">
+<p id="demo"></p>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
