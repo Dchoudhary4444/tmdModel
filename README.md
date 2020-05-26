@@ -24,3 +24,6 @@ these three table should be intialized first so in "tmdModel/db" folder values.s
 so login as tmdModel user and source values.sql
 
 now user can create project by selecting appropriate database architecture and data tyeps;
+
+
+7 th commit--in future name of testing file should be changed to creatProject.jsp and solve the error of projectServiec saveProject function 
