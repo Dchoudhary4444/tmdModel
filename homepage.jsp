@@ -132,43 +132,35 @@ ${sessionScope.username}
 
    
 
-<!-- Modal -->
+<!--create project  Modal -->
 <div class="modal fade" id="createProjectModal" role="dialog" data-backdrop='static'>
 <div class="modal-dialog modal-lg">
 <div class="modal-content">
 <div class="modal-header">
 <h4 class="modal-title">Create Project</h4>          
 <button type="button" class="close" data-dismiss="modal">&times;</button>
-          </div>
-        <div class="modal-body">
-          <form method='Post' id='modalCreateProject' action='/tmdModel/webservice/projectService/create' novalidate>
+</div>
+<div class="modal-body">
+<form method='Post' id='modalCreateProject' action='/tmdModel/webservice/projectService/create' novalidate>
 
 <div class="form-group">
-              
-<div class="form-label-group">
-                
-<input type="text" id="projectTitle" name="argument-1" class="form-control" placeholder="Project Title "   required="required"   autofocus="autofocus">
-                
-<label for="projectTitle"></label>
-              
-</div>
-            
+<label class="sr-only" for="projectTitle">Project Title</label>
+<input type="text" id="projectTitle" name="argument-1" class="form-control" placeholder="Project Title "   required="required"   autofocus>
 </div>
 
 <h6>
 <b>Select Database Architecture</b>
-<select name='argument-2' id='projectArchitecture'>
-<option value='-1'>&lt;Select&gt;</option>
+<select class="btn btn-secondary dropdown-toggle" name='argument-2' id='projectArchitecture'>
 <c:forEach var="message" items="${applicationScope.databaseArchitectures}">
-<option value="${message.code}">${message.name}</option>
+<option  value="${message.code}">${message.name}</option>
 </c:forEach>
-
 </select>
 </h6>
+
 </div>
 <div class="modal-footer">
-<input type="submit" class="btn btn-default" value='Create' >
-<button type="button" class="btn btn-default"  data-dismiss="modal">Close</button>
+<input type="submit" class="btn btn-default btn-lg" value='Create'  >
+<button type="button" class="btn btn-default btn-lg"  data-dismiss="modal" >Close</button>
 </div>
 </div>
 </form>
@@ -192,8 +184,7 @@ ${sessionScope.username}
 
 <h6>
 <b>Select Project</b>
-<select  id='projectName' name='projectName'>
-<option value='-1'>&lt;Select&gt;</option>
+<select class="btn btn-secondary dropdown-toggle"  id='projectName' name='projectName'>
 <c:forEach var="message" items="${sessionScope.projects}">
 <option value="${message.code}">${message.title}</option>
 </c:forEach>
@@ -202,7 +193,7 @@ ${sessionScope.username}
 </h6>
 </div>
 <div class="modal-footer">
-<input type="submit" class="btn btn-default" value='Open' >
+<input type="submit" class="btn btn-default btn-lg" value='Open' >
 </div>
 </div>
 </form>

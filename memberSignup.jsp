@@ -146,7 +146,7 @@ alert("Signup successfull");
 mailId.removeClass("is-invalid");
 // valid ka code
 //alert(JSON.stringify(res.result));
-location.replace("/tmdModel/memberLogin1.jsp");
+location.replace("/tmdModel/memberLogin.jsp");
 }//resresult
 else
 {

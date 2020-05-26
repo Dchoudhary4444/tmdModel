@@ -24,11 +24,11 @@ try
 System.out.println("Logout chala");
 this.session.removeAttribute("member");
 this.session.removeAttribute("username");
-return new TMForward("/memberLogin1.jsp");
+return new TMForward("/memberLogin.jsp");
 }catch(Exception e)
 {
 System.out.println("Exception :"+e.getMessage());
-return new TMForward("/memberLogin1.jsp");
+return new TMForward("/memberLogin.jsp");
 }
 }
 }

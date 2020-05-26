@@ -4,36 +4,20 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-    
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
 <meta name="description" content="">
-    
 <meta name="author" content="">
-
-    
 <title>Member - Login</title>
-
-    
 <!-- Bootstrap core CSS-->
-    
 <link href="/tmdModel/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-    
 <!-- Custom fonts for this template-->
-    
 <link href="/tmdModel/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-
-    
 <!-- Custom styles for this template-->
-    
 <link href="/tmdModel/css/sb-admin.css" rel="stylesheet">
-
-
 <script src='/tmdModel/JQuery/jquery-3.3.1.min.js></script>
 <script src='/tmdModel/webservice/js/TMService.js'></script>
+
 <script>
 function attachEvents()
 {
@@ -90,7 +74,7 @@ waitingDialog.message("ruk na");
 var cap={
 "argument-1":$("#loginForm").find("input[name=captchaCode]").val()
 };
-alert(JSON.stringify(cap));
+//alert(JSON.stringify(cap));
 var captchaResult=false;
 $.ajax('/tmdModel/webservice/captchaService/validateCaptcha',{
 type:"POST",
@@ -104,8 +88,7 @@ if(res.isReturningSomething)
 {
 if(res.result)
 {
-
-alert(JSON.stringify(res.result));
+//alert(JSON.stringify(res.result));
 document.getElementById('loginForm').action='/tmdModel/webservice/memberLogin/login';
 document.getElementById('loginForm').submit();
 }
@@ -120,61 +103,39 @@ else alert("Invalid captcha");
 
  
 <body class="bg-dark">
-
-    
 <div class="container">
-      
 <div class="card card-login mx-auto mt-5">
-        
 <div class="card-header">Login</div>
-        
 <div class="card-body">
-          
 <span><tm:Error name='errorBean' scope='request' >${error}</tm:Error></span>
+
 <form method='Post' id='loginForm' action='/tmdModel/memberLogin1.jsp'  novalidate>
 
 <div class="form-group">
-              
 <div class="form-label-group">
-                
 <input type="email" id="emailId" name="argument-1" class="form-control ${isValid}"  placeholder="Email address"   required="required"   autofocus="autofocus" value=${emailId}>
-                
 <span><tm:Error name='errorBean' scope='request' property='emailId'>${error}</tm:Error></span>
 <label for="emailId">Email address</label>
-              
 </div>
-            
 </div>
-            
+
 <div class="form-group">
-              
 <div class="form-label-group">
-                
 <input type="password" id="password" name="argument-2"  class="form-control" placeholder="Password"  autofocus="autofocus" required="required">
-                
 <tm:Error name='errorBean' scope='request' property='password'>${error}</tm:Error>
 <label for="password">Password</label>
-              
 </div>
-            
 </div>
             
 <div class="form-group">
-              
 <div class="checkbox">
-                
 <label>
-                  
 <input type="checkbox" value="remember-me">
-                  
 Remember Password
-                
 </label>
-              
 </div>
-            
 </div>
-            
+
 <!-- Security Card Starts here -->
 <div class='card card-register mx-auto mt-1'>
 <div class='card-header'>Input security</div>
@@ -195,37 +156,23 @@ Remember Password
 </div> <!-- card body -->
 </div> <!-- card -->
 <!-- Security Card Ends here -->
+
 <button type='button' onclick='processLoginForm()'   class="btn btn-primary btn-block" >Login</button>
 </form>
           
 <div class="text-center">
-            
 <a class="d-block small mt-3" href="signup.html">Register an Account</a>
-            
 <a class="d-block small" href="forgot-password.html">Forgot Password?</a>
-          
 </div>
-        
 </div>
-      
 </div>
-    
 </div>
 
 
 <!-- Bootstrap core JavaScript-->
-    
 <script src="/tmdModel/vendor/jquery/jquery.min.js"></script>
-    
 <script src="/tmdModel/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-
-<!-- Core plugin JavaScript-->
-    
+<!-- Core plugin JavaScript-->    
 <script src="/tmdModel/vendor/jquery-easing/jquery.easing.min.js"></script>
-
-  
 </body>
-
-
 </html>
